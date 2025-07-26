@@ -1,0 +1,27 @@
+navicat连上了本地的mysql服务但是忘记密码了怎么办
+编辑
+复制
+既然 Navicat 已经连上了本机 MySQL，说明当前会话是“已认证”状态。
+在 5.7 及以后版本里，只要拥有 SUPER 或 ALTER USER 权限（root 通常都有），就可以在不重启服务、不跳过权限表的情况下直接在线改密码。下面给出最常用的两种方法，任选其一即可。
+✅ 方法一：直接用 Navicat 改
+在 Navicat 里双击已连上的连接，保持会话打开。
+按 F6 或菜单「工具」→「命令列界面」，打开 Navicat 的内置命令行。
+执行（把 newpwd 换成你要设的新密码）：
+sql
+复制
+-- MySQL 5.7/8.0 通用
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'newpwd';
+FLUSH PRIVILEGES;
+如果报 “Your MySQL server version does not support …”，说明是老版本，用：
+sql
+复制
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('newpwd');
+退出命令行，重新用新密码连接测试即可。
+✅ 方法二：用 root 再创建一个“备份账号”
+如果你怕改 root 密码有风险，也可以先新建一个高权限账号，后续再用它去重置 root：
+sql
+复制
+CREATE USER 'tmpadmin'@'localhost' IDENTIFIED BY 'tmppwd';
+GRANT ALL PRIVILEGES ON *.* TO 'tmpadmin'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+以后用 tmpadmin 登录，再随意处理 root 密码。
