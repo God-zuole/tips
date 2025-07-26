@@ -1,0 +1,50 @@
+在 Windows 上本地搭建 MinIO 服务端非常简单，以下是详细步骤：
+✅ 一、准备工作
+创建目录结构（建议放在非系统盘）：
+复制
+D:\minio\
+├── bin\      （放 minio.exe）
+└── data\     （存储数据）
+下载 MinIO 可执行文件：
+官网直达：https://dl.min.io/server/minio/release/windows-amd64/minio.exe
+下载后把 minio.exe 放到 D:\minio\bin\ 目录下。
+✅ 二、启动 MinIO 服务
+方法一：命令行启动（推荐）
+打开 CMD，进入 D:\minio\bin 目录：
+sh
+复制
+cd D:\minio\bin
+启动服务（指定控制台和 API 端口）：
+sh
+复制
+.\minio.exe server D:\minio\data --console-address "127.0.0.1:9001" --address "127.0.0.1:9000"
+--console-address：Web 控制台访问地址（默认是随机端口）
+--address：S3 API 接口地址（默认是 9000）
+首次启动默认账号密码：
+用户名：minioadmin
+密码：minioadmin
+建议通过环境变量设置自定义账号密码（见下方）。
+✅ 三（可选）设置自定义账号密码
+在 CMD（管理员权限） 中执行：
+sh
+复制
+setx MINIO_ROOT_USER admin
+setx MINIO_ROOT_PASSWORD yourpassword
+密码必须 ≥ 8 位，设置后需 重启终端或系统 生效。
+✅ 四、访问 MinIO 控制台
+浏览器访问：
+http://127.0.0.1:9001
+输入用户名密码登录后，即可上传、下载、管理文件。
+✅ 五（可选）创建一键启动脚本
+在 D:\minio\ 目录下新建 start.bat 文件，内容如下：
+bat
+复制
+@echo off
+cd /d D:\minio\bin
+.\minio.exe server D:\minio\data --console-address "127.0.0.1:9001" --address "127.0.0.1:9000"
+pause
+以后双击即可启动服务。
+✅ 小贴士
+不要双击 minio.exe 启动，必须通过命令行。
+如需公网访问，可将 --address 改为 0.0.0.0:9000，并配置防火墙放行端口。
+完成以上步骤后，你就拥有了一个本地运行的 MinIO 对象存储服务，兼容 AWS S3 API，适合开发测试、本地文件存储或构建私有云。
