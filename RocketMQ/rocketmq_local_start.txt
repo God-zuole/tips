@@ -1,0 +1,73 @@
+以下是在 Windows 本地启动 RocketMQ 服务 的完整步骤，适用于 RocketMQ 5.x 版本，基于最新资料整理，确保可直接操作：
+✅ 一、准备工作
+1. 安装要求
+操作系统：Windows 64 位
+JDK：1.8 及以上（需配置好 JAVA_HOME）
+2. 下载并解压
+从官网下载二进制包（推荐）：
+https://rocketmq.apache.org/download
+解压到如：
+D:\rocketmq-5.3.0
+3. 配置环境变量
+ROCKETMQ_HOME: D:\rocketmq-5.3.0
+Path 中添加：%ROCKETMQ_HOME%\bin
+✅ 二、启动 NameServer
+打开 CMD，执行：
+bash
+复制
+cd D:\rocketmq-5.3.0\bin
+start mqnamesrv.cmd
+成功标志：logs/namesrv.log 中出现 “The Name Server boot success...”
+✅ 三、启动 Broker
+⚠️ 默认内存占用较大，建议先修改启动脚本的 JVM 参数。
+1. 修改内存参数（可选但推荐）
+编辑 runbroker.cmd 文件，把：
+bat
+复制
+set "JAVA_OPT=%JAVA_OPT% -server -Xms2g -Xmx2g -Xmn1g"
+改为：
+bat
+复制
+set "JAVA_OPT=%JAVA_OPT% -server -Xms512m -Xmx512m -Xmn256m"
+2. 启动 Broker
+bash
+复制
+start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true
+成功标志：logs/broker.log 中出现 “boot success...”
+✅ 四（可选）启动 Proxy（RocketMQ 5.x 新增）
+RocketMQ 5.x 引入了 Proxy 组件，支持 gRPC 协议。
+bash
+复制
+start mqproxy.cmd -n 127.0.0.1:9876
+✅ 五、测试消息收发
+设置环境变量：
+bash
+复制
+set NAMESRV_ADDR=127.0.0.1:9876
+然后执行：
+bash
+复制
+tools.cmd org.apache.rocketmq.example.quickstart.Producer
+tools.cmd org.apache.rocketmq.example.quickstart.Consumer
+若看到发送与接收消息成功，说明服务已正常运行。
+✅ 六、一键启动脚本（可选）
+创建 start-all.bat 文件，内容如下：
+bat
+复制
+@echo off
+cd /d D:\rocketmq-5.3.0\bin
+start mqnamesrv.cmd
+timeout /t 3
+start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true
+timeout /t 3
+start mqproxy.cmd -n 127.0.0.1:9876
+pause
+✅ 七、常见问题提示
+表格
+复制
+问题	解决方法
+启动失败，提示内存不足	修改 runbroker.cmd 和 runserver.cmd 中的 JVM 内存参数
+端口冲突	检查 listenPort 是否被占用，默认 10911
+NameServer 无法连接	确保防火墙未阻止 9876 端口，或检查是否已启动
+如需图形化管理界面，可额外部署 RocketMQ Dashboard（需单独启动）。
+完成以上步骤后，你的 Windows 本地 RocketMQ 服务就成功启动并可以使用了。
